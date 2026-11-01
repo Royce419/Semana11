@@ -13,6 +13,7 @@ jobs:
     timeout-minutes: 30
 
     env:
+      BASE_URL: http://127.0.0.1:8080/tienda_demo.html
       SE_CACHE_PATH: ${{ github.workspace }}/proyecto-tiendademo/.cache/selenium
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/proyecto-tiendademo/.cache/ms-playwright
       EVIDENCE_DIR: ${{ github.workspace }}/proyecto-tiendademo/evidencias-ci
@@ -36,20 +37,44 @@ jobs:
           python -m pip install -r requirements.txt
           mkdir -p reports
 
+      - name: Construir y levantar la tienda con Docker Compose
+        id: docker
+        run: docker compose -f docker-compose.semana8.yml up -d --build
+
+      - name: Esperar a que la tienda responda
+        id: tienda
+        run: |
+          for intento in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/tienda_demo.html > /dev/null; then
+              echo "La tienda está disponible."
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f docker-compose.semana8.yml logs
+          exit 1
+
       - name: Instalar Chromium para Playwright
         id: navegador
         working-directory: proyecto-tiendademo
         run: python -m playwright install --with-deps chromium
 
       - name: Ejecutar pruebas Selenium
-        if: ${{ always() && steps.dependencias.outcome == 'success' && steps.navegador.outcome == 'success' }}
+        if: ${{ always() && steps.dependencias.outcome == 'success' && steps.docker.outcome == 'success' && steps.tienda.outcome == 'success' && steps.navegador.outcome == 'success' }}
         working-directory: proyecto-tiendademo
         run: python -m pytest selenium/tests -v --junitxml=reports/selenium.xml
 
       - name: Ejecutar pruebas Playwright
-        if: ${{ always() && steps.dependencias.outcome == 'success' && steps.navegador.outcome == 'success' }}
+        if: ${{ always() && steps.dependencias.outcome == 'success' && steps.docker.outcome == 'success' && steps.tienda.outcome == 'success' && steps.navegador.outcome == 'success' }}
         working-directory: proyecto-tiendademo
         run: python -m pytest playwright/tests -v --junitxml=reports/playwright.xml
+
+      - name: Detener Docker Compose y guardar sus registros
+        if: always()
+        run: |
+          mkdir -p proyecto-tiendademo/reports
+          docker compose -f docker-compose.semana8.yml logs --no-color > proyecto-tiendademo/reports/docker-compose.log 2>&1 || true
+          docker compose -f docker-compose.semana8.yml down --remove-orphans || true
 
       - name: Guardar reportes y evidencias
         if: always()

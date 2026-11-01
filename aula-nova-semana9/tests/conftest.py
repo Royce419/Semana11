@@ -10,7 +10,7 @@ from tests.pages.aula_page import AulaPage
 @pytest.fixture(scope="session")
 def navegador():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
 
         yield browser
 
