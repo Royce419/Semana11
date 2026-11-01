@@ -1,0 +1,62 @@
+name: Semana 8 - TiendaDemo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pruebas-semana-8:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      SE_CACHE_PATH: ${{ github.workspace }}/proyecto-tiendademo/.cache/selenium
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/proyecto-tiendademo/.cache/ms-playwright
+      EVIDENCE_DIR: ${{ runner.temp }}/semana8-evidencias
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v7
+
+      - name: Configurar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: proyecto-tiendademo/requirements.txt
+
+      - name: Instalar dependencias
+        id: dependencias
+        working-directory: proyecto-tiendademo
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          mkdir -p reports
+
+      - name: Instalar Chromium para Playwright
+        id: navegador
+        working-directory: proyecto-tiendademo
+        run: python -m playwright install --with-deps chromium
+
+      - name: Ejecutar pruebas Selenium
+        if: ${{ always() && steps.dependencias.outcome == 'success' && steps.navegador.outcome == 'success' }}
+        working-directory: proyecto-tiendademo
+        run: python -m pytest selenium/tests -v --junitxml=reports/selenium.xml
+
+      - name: Ejecutar pruebas Playwright
+        if: ${{ always() && steps.dependencias.outcome == 'success' && steps.navegador.outcome == 'success' }}
+        working-directory: proyecto-tiendademo
+        run: python -m pytest playwright/tests -v --junitxml=reports/playwright.xml
+
+      - name: Guardar reportes y evidencias
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: semana8-reportes-y-evidencias
+          path: |
+            proyecto-tiendademo/reports/
+            ${{ runner.temp }}/semana8-evidencias/
+          if-no-files-found: warn
