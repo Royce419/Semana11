@@ -15,7 +15,7 @@ jobs:
     env:
       SE_CACHE_PATH: ${{ github.workspace }}/proyecto-tiendademo/.cache/selenium
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/proyecto-tiendademo/.cache/ms-playwright
-      EVIDENCE_DIR: ${{ runner.temp }}/semana8-evidencias
+      EVIDENCE_DIR: ${{ github.workspace }}/proyecto-tiendademo/evidencias-ci
 
     steps:
       - name: Descargar repositorio
@@ -58,5 +58,5 @@ jobs:
           name: semana8-reportes-y-evidencias
           path: |
             proyecto-tiendademo/reports/
-            ${{ runner.temp }}/semana8-evidencias/
+            proyecto-tiendademo/evidencias-ci/
           if-no-files-found: warn
