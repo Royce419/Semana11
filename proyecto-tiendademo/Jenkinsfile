@@ -1,0 +1,23 @@
+pipeline {
+    agent any
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 30, unit: 'MINUTES')
+    }
+    stages {
+        stage('Preparar y ejecutar pruebas') {
+            steps {
+                withEnv(["EVIDENCE_DIR=${WORKSPACE}/evidencias/ci-${BUILD_NUMBER}"]) {
+                    sh 'bash scripts/ci.sh'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            junit testResults: "evidencias/ci-${BUILD_NUMBER}/**/resultados.xml", allowEmptyResults: false
+            archiveArtifacts artifacts: "evidencias/ci-${BUILD_NUMBER}/**/*", allowEmptyArchive: true
+        }
+    }
+}

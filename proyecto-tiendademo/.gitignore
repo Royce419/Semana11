@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.cache/
+evidencias/**/*.png
+evidencias/**/*.xml
+evidencias/**/*.log
+evidencias_tiendademo.zip
+.jenkins-local/
+.venv-ci/
+documentacion_jenkins.zip

@@ -1,0 +1,10 @@
+# Entornos y cachés locales
+**/.venv/
+**/venv/
+**/node_modules/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.cache/
+**/.jenkins-local/
+**/.venv-ci/

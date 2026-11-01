@@ -1,0 +1,471 @@
+{
+  "_class": "hudson.model.FreeStyleBuild",
+  "actions": [
+    {
+      "_class": "hudson.model.CauseAction",
+      "causes": [
+        {
+          "_class": "hudson.model.Cause$UserIdCause",
+          "shortDescription": "Lanzada por el usuario admin",
+          "userId": "admin",
+          "userName": "admin"
+        }
+      ]
+    },
+    {}
+  ],
+  "artifacts": [
+    {
+      "displayPath": null,
+      "fileName": "test_CP_01.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_01.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_02.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_02.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_03.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_03.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_04.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_04.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_05.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_05.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_06.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_06.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_07.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_07.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_08.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_08.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_09.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_09.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_10.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_10.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_11.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_11.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_12.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_12.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_13.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_13.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_14.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_14.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_15.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_15.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_16.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_16.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_17.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_17.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_18.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_18.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_19.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_19.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_20.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_20.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_21.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_21.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_22.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_22.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_23.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_23.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_24.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_24.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_25.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_25.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_26.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_26.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_27.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_27.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_28.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_28.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_29.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_29.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_30.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_30.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_31.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_31.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_32.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_32.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_33.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_33.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_34.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_34.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_35.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_35.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_36.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_36.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_37.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_37.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_38.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_38.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_39.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_39.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_40.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_40.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_41.png",
+      "relativePath": "evidencias/1/playwright/20261009-235835-287113/test_CP_41.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "ejecucion.log",
+      "relativePath": "evidencias/1/playwright/ejecucion.log"
+    },
+    {
+      "displayPath": null,
+      "fileName": "resultados.xml",
+      "relativePath": "evidencias/1/playwright/resultados.xml"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_01.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_01.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_02.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_02.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_03.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_03.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_04.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_04.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_05.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_05.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_06.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_06.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_07.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_07.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_08.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_08.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_09.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_09.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_10.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_10.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_11.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_11.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_12.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_12.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_13.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_13.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_14.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_14.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_15.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_15.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_16.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_16.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_17.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_17.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_18.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_18.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_19.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_19.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_20.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_20.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_21.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_21.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_22.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_22.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_23.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_23.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_24.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_24.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_25.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_25.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_26.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_26.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_27.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_27.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_28.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_28.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_29.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_29.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_30.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_30.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_31.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_31.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_32.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_32.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_33.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_33.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_34.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_34.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_35.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_35.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_36.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_36.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_37.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_37.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_38.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_38.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_39.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_39.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_40.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_40.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "test_CP_41.png",
+      "relativePath": "evidencias/1/selenium/20261009-235659-034962/test_CP_41.png"
+    },
+    {
+      "displayPath": null,
+      "fileName": "ejecucion.log",
+      "relativePath": "evidencias/1/selenium/ejecucion.log"
+    },
+    {
+      "displayPath": null,
+      "fileName": "resultados.xml",
+      "relativePath": "evidencias/1/selenium/resultados.xml"
+    }
+  ],
+  "building": false,
+  "description": null,
+  "displayName": "#1",
+  "duration": 140097,
+  "estimatedDuration": 140097,
+  "executor": null,
+  "fullDisplayName": "TiendaDemo-Pruebas #1",
+  "id": "1",
+  "inProgress": false,
+  "keepLog": false,
+  "number": 1,
+  "queueId": 1,
+  "result": "SUCCESS",
+  "timestamp": 1791608218627,
+  "url": "http://127.0.0.1:8081/job/TiendaDemo-Pruebas/1/",
+  "builtOn": "",
+  "changeSet": {
+    "_class": "hudson.scm.EmptyChangeLogSet",
+    "items": [],
+    "kind": null
+  },
+  "culprits": []
+}
