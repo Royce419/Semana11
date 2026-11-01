@@ -11,4 +11,4 @@ Los proyectos permanecen en carpetas separadas porque son aplicaciones distintas
 
 ## Próximos componentes de la tarea
 
-La consigna de Semana 11 también solicita incorporar y ejecutar los pipelines de GitHub Actions y Jenkins, Docker/Compose, integración con TestLink, reportes y evidencias de ejecución. Estos componentes deben agregarse y validarse como parte del trabajo.
+La consigna de Semana 11 también solicita incorporar y ejecutar los pipelines de GitHub Actions y Jenkins, Docker/Compose, integración con TestLink, reportes y evidencias de ejecución.
