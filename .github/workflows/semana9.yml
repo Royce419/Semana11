@@ -1,0 +1,142 @@
+name: Semana 9 - Aula Nova
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pruebas-semana-9:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    defaults:
+      run:
+        working-directory: aula-nova-semana9
+
+    env:
+      BASE_URL: http://127.0.0.1:3000
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v7
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Configurar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Instalar k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Instalar dependencias y preparar reportes
+        id: instalar
+        run: |
+          npm ci
+          python -m pip install --upgrade pip
+          python -m pip install pytest playwright
+          python -m playwright install --with-deps chromium
+          mkdir -p reports/servidor reports/pytest reports/seguridad
+          mkdir -p reports/performance reports/stress
+
+      - name: Pruebas unitarias del servidor
+        if: ${{ always() && steps.instalar.outcome == 'success' }}
+        run: |
+          node --test \
+            --test-reporter=junit \
+            --test-reporter-destination=reports/servidor/TESTS-servidor.xml \
+            backend/server.test.js
+
+      - name: Iniciar aplicación y esperar disponibilidad
+        id: servidor
+        if: ${{ always() && steps.instalar.outcome == 'success' }}
+        run: |
+          nohup node backend/server.js > reports/servidor/server.log 2>&1 &
+          echo $! > reports/servidor/server.pid
+
+          for intento in {1..30}; do
+            if curl --fail --silent "$BASE_URL" > /dev/null; then
+              echo "Aula Nova está disponible."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          cat reports/servidor/server.log
+          exit 1
+
+      - name: Pruebas funcionales Playwright
+        if: ${{ always() && steps.instalar.outcome == 'success' && steps.servidor.outcome == 'success' }}
+        run: |
+          python -m pytest tests -v \
+            --junitxml=reports/pytest/TESTS-playwright.xml
+
+      - name: Pruebas de rendimiento k6
+        if: ${{ always() && steps.instalar.outcome == 'success' && steps.servidor.outcome == 'success' }}
+        run: |
+          shopt -s nullglob
+          archivos=(prueba-rendimiento/CR-*.js)
+          if [ "${#archivos[@]}" -ne 10 ]; then
+            echo "Se esperaban 10 escenarios CR; encontrados: ${#archivos[@]}"
+            exit 1
+          fi
+
+          fallo=0
+          for archivo in "${archivos[@]}"; do
+            nombre=$(basename "$archivo" .js)
+            k6 run --env BASE_URL="$BASE_URL" \
+              --summary-export="reports/performance/${nombre}.json" \
+              "$archivo" || fallo=1
+          done
+          exit "$fallo"
+
+      - name: Pruebas de estrés k6
+        if: ${{ always() && steps.instalar.outcome == 'success' && steps.servidor.outcome == 'success' }}
+        run: |
+          shopt -s nullglob
+          archivos=(pruebas-estres/CE-*.js)
+          if [ "${#archivos[@]}" -ne 10 ]; then
+            echo "Se esperaban 10 escenarios CE; encontrados: ${#archivos[@]}"
+            exit 1
+          fi
+
+          fallo=0
+          for archivo in "${archivos[@]}"; do
+            nombre=$(basename "$archivo" .js)
+            k6 run \
+              --summary-export="reports/stress/${nombre}.json" \
+              "$archivo" || fallo=1
+          done
+          exit "$fallo"
+
+      - name: Pruebas de seguridad
+        if: ${{ always() && steps.instalar.outcome == 'success' }}
+        run: |
+          node --test \
+            --test-reporter=junit \
+            --test-reporter-destination=reports/seguridad/TESTS-seguridad.xml \
+            backend/security.test.js
+
+      - name: Detener aplicación
+        if: always()
+        run: |
+          if [ -f reports/servidor/server.pid ]; then
+            kill "$(cat reports/servidor/server.pid)" 2>/dev/null || true
+          fi
+
+      - name: Guardar reportes y evidencias
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: semana9-reportes-y-evidencias
+          path: |
+            aula-nova-semana9/reports/
+            aula-nova-semana9/evidencias/
+          if-no-files-found: warn
