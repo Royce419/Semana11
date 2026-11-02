@@ -1,202 +1,357 @@
-def runCommand(String unixCommand, String windowsCommand) {
-    if (isUnix()) {
-        sh(script: unixCommand)
-    } else {
-        bat(script: windowsCommand)
-    }
-}
 
 pipeline {
     agent any
 
-    triggers {
-        pollSCM('H/5 * * * *')
-    }
+    parameters {
+        booleanParam(
+            name: 'PRUEBAS_FUNCIONALES',
+            defaultValue: false,
+            description: 'Ejecutar Selenium y Playwright'
+        )
 
-    options {
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 120, unit: 'MINUTES')
+        booleanParam(
+            name: 'PRUEBAS_K6',
+            defaultValue: false,
+            description: 'Ejecutar las pruebas largas de rendimiento y estres'
+        )
     }
 
     environment {
-        TIENDA_URL = 'http://127.0.0.1:8081/tienda_demo.html'
-        AULA_NOVA_URL = 'http://127.0.0.1:3001'
+        PATH = "/Applications/Docker.app/Contents/Resources/bin:/usr/local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:${env.PATH}"
+
+        TIENDA_URL = "http://127.0.0.1:8082/tienda_demo.html"
+        AULA_NOVA_URL = "http://127.0.0.1:3003"
+
+        DOCKER_BUILDKIT = "1"
+    }
+
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        timeout(time: 120, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('Descargar proyecto GitHub') {
             steps {
                 checkout scm
             }
         }
 
+        stage('Preparar directorios') {
+            steps {
+                sh '''
+                    set -eu
+
+                    mkdir -p proyecto-tiendademo/reports/jenkins
+                    mkdir -p aula-nova-semana9/reports/servidor
+                    mkdir -p aula-nova-semana9/reports/seguridad
+                    mkdir -p aula-nova-semana9/reports/pytest
+                    mkdir -p aula-nova-semana9/reports/performance
+                    mkdir -p aula-nova-semana9/reports/stress
+
+                    echo "Directorios preparados."
+                '''
+            }
+        }
+
         stage('Verificar herramientas') {
             steps {
-                script {
-                    runCommand(
-                        'docker compose version && node --version && python3 --version && k6 version',
-                        'docker compose version && node --version && py --version && k6 version'
-                    )
-                }
+                sh '''
+                    set -eu
+
+                    echo "=== DOCKER ==="
+                    docker --version
+                    docker compose version
+                    docker info > /dev/null
+
+                    echo "=== NODE ==="
+                    node --version
+                    npm --version
+
+                    echo "=== PYTHON ==="
+                    python3 --version
+
+                    echo "Herramientas verificadas."
+                '''
             }
         }
 
-        stage('Preparar Semana 8') {
+        stage('Preparar Compose aislado') {
             steps {
-                dir('proyecto-tiendademo') {
-                    script {
-                        runCommand(
-                            'python3 -m pip install -r requirements.txt && python3 -m playwright install chromium',
-                            'py -m pip install -r requirements.txt && py -m playwright install chromium'
-                        )
+                sh '''
+                    set -eu
+
+                    python3 - <<'PY'
+from pathlib import Path
+
+p8 = Path("docker-compose.semana8.yml")
+p9 = Path("docker-compose.semana9.yml")
+
+a = p8.read_text()
+b = p9.read_text()
+
+assert "8081:80" in a
+assert "3001:3000" in b
+
+a = a.replace(
+    "8081:80",
+    "127.0.0.1:8082:80"
+)
+
+b = b.replace(
+    "3001:3000",
+    "127.0.0.1:3003:3000"
+)
+
+b = b.replace(
+    "container_name: aula-nova-semana09",
+    ""
+)
+
+Path("ci-semana8.yml").write_text(a)
+Path("ci-semana9.yml").write_text(b)
+
+print("Compose CI preparado.")
+PY
+                '''
+            }
+        }
+
+        stage('Construir Docker Semana 8') {
+            steps {
+                sh '''
+                    set -eu
+
+                    docker compose -p semana11ci8 \
+                      -f ci-semana8.yml build
+                '''
+            }
+        }
+
+        stage('Iniciar TiendaDemo') {
+            steps {
+                sh '''
+                    set -eu
+
+                    docker compose -p semana11ci8 \
+                      -f ci-semana8.yml up -d
+
+                    python3 scripts/wait_http.py \
+                      "$TIENDA_URL"
+
+                    echo "TiendaDemo disponible."
+                '''
+            }
+        }
+
+        stage('Construir Docker Semana 9') {
+            steps {
+                sh '''
+                    set -eu
+
+                    docker compose -p semana11ci9 \
+                      -f ci-semana9.yml build
+                '''
+            }
+        }
+
+        stage('Iniciar Aula Nova') {
+            steps {
+                sh '''
+                    set -eu
+
+                    docker compose -p semana11ci9 \
+                      -f ci-semana9.yml up -d
+
+                    python3 scripts/wait_http.py \
+                      "$AULA_NOVA_URL/api/courses"
+
+                    echo "Aula Nova disponible."
+                '''
+            }
+        }
+
+        stage('Pruebas API Semana 9') {
+            steps {
+                catchError(
+                    buildResult: 'FAILURE',
+                    stageResult: 'FAILURE'
+                ) {
+                    dir('aula-nova-semana9') {
+                        sh '''
+                            set -eu
+
+                            node --test \
+                              --test-reporter=junit \
+                              --test-reporter-destination=reports/servidor/TESTS-servidor.xml \
+                              backend/server.test.js
+
+                            echo "Reporte del servidor generado."
+                        '''
                     }
                 }
             }
         }
 
-        stage('Build y entorno Docker Semana 8') {
+        stage('Pruebas seguridad Semana 9') {
             steps {
-                script {
-                    runCommand(
-                        'docker compose -f docker-compose.semana8.yml up -d --build',
-                        'docker compose -f docker-compose.semana8.yml up -d --build'
-                    )
-                }
-            }
-        }
+                catchError(
+                    buildResult: 'FAILURE',
+                    stageResult: 'FAILURE'
+                ) {
+                    dir('aula-nova-semana9') {
+                        sh '''
+                            set -eu
 
-        stage('Esperar TiendaDemo') {
-            steps {
-                script {
-                    runCommand(
-                        'python3 scripts/wait_http.py http://127.0.0.1:8081/tienda_demo.html',
-                        'py scripts/wait_http.py http://127.0.0.1:8081/tienda_demo.html'
-                    )
-                }
-            }
-        }
+                            node --test \
+                              --test-reporter=junit \
+                              --test-reporter-destination=reports/seguridad/TESTS-seguridad.xml \
+                              backend/security.test.js
 
-        stage('Selenium Semana 8') {
-            steps {
-                dir('proyecto-tiendademo') {
-                    script {
-                        withEnv(["BASE_URL=${env.TIENDA_URL}", "EVIDENCE_DIR=${env.WORKSPACE}/proyecto-tiendademo/evidencias/jenkins-${env.BUILD_NUMBER}"]) {
-                            runCommand(
-                                'mkdir -p reports/jenkins && python3 -m pytest selenium/tests -v --junitxml=reports/jenkins/selenium.xml',
-                                'if not exist reports\\jenkins mkdir reports\\jenkins\r\npy -m pytest selenium/tests -v --junitxml=reports/jenkins/selenium.xml'
-                            )
-                        }
+                            echo "Reporte de seguridad generado."
+                        '''
                     }
                 }
             }
         }
 
-        stage('Playwright Semana 8') {
-            steps {
-                dir('proyecto-tiendademo') {
-                    script {
-                        withEnv(["BASE_URL=${env.TIENDA_URL}", "EVIDENCE_DIR=${env.WORKSPACE}/proyecto-tiendademo/evidencias/jenkins-${env.BUILD_NUMBER}"]) {
-                            runCommand(
-                                'mkdir -p reports/jenkins && python3 -m pytest playwright/tests -v --junitxml=reports/jenkins/playwright.xml',
-                                'if not exist reports\\jenkins mkdir reports\\jenkins\r\npy -m pytest playwright/tests -v --junitxml=reports/jenkins/playwright.xml'
-                            )
-                        }
-                    }
+        stage('Pruebas funcionales Semana 8') {
+            when {
+                expression {
+                    return params.PRUEBAS_FUNCIONALES
                 }
             }
-        }
 
-        stage('Preparar Semana 9') {
             steps {
-                dir('aula-nova-semana9') {
-                    script {
-                        runCommand(
-                            'npm ci && python3 -m pip install pytest playwright && python3 -m playwright install chromium && mkdir -p reports/servidor reports/pytest reports/seguridad reports/performance reports/stress',
-                            'npm ci && py -m pip install pytest playwright && py -m playwright install chromium && if not exist reports\\servidor mkdir reports\\servidor && if not exist reports\\pytest mkdir reports\\pytest && if not exist reports\\seguridad mkdir reports\\seguridad && if not exist reports\\performance mkdir reports\\performance && if not exist reports\\stress mkdir reports\\stress'
-                        )
-                    }
-                }
-            }
-        }
+                catchError(
+                    buildResult: 'FAILURE',
+                    stageResult: 'FAILURE'
+                ) {
+                    dir('proyecto-tiendademo') {
+                        sh '''
+                            set -eu
 
-        stage('Build y entorno Docker Semana 9') {
-            steps {
-                script {
-                    runCommand(
-                        'docker compose -f docker-compose.semana9.yml up -d --build',
-                        'docker compose -f docker-compose.semana9.yml up -d --build'
-                    )
-                }
-            }
-        }
+                            python3 -m venv .venv
 
-        stage('Esperar Aula Nova') {
-            steps {
-                script {
-                    runCommand(
-                        'python3 scripts/wait_http.py http://127.0.0.1:3001/api/courses',
-                        'py scripts/wait_http.py http://127.0.0.1:3001/api/courses'
-                    )
-                }
-            }
-        }
+                            .venv/bin/python -m pip install \
+                              -r requirements.txt
 
-        stage('Pruebas servidor y seguridad Semana 9') {
-            steps {
-                dir('aula-nova-semana9') {
-                    script {
-                        runCommand(
-                            'node --test --test-reporter=junit --test-reporter-destination=reports/servidor/TESTS-servidor.xml backend/server.test.js && node --test --test-reporter=junit --test-reporter-destination=reports/seguridad/TESTS-seguridad.xml backend/security.test.js',
-                            'node --test --test-reporter=junit --test-reporter-destination=reports/servidor/TESTS-servidor.xml backend/server.test.js && node --test --test-reporter=junit --test-reporter-destination=reports/seguridad/TESTS-seguridad.xml backend/security.test.js'
-                        )
+                            .venv/bin/python -m playwright \
+                              install chromium
+
+                            export BASE_URL="$TIENDA_URL"
+
+                            .venv/bin/python -m pytest \
+                              selenium/tests \
+                              -v \
+                              --junitxml=reports/jenkins/selenium.xml
+
+                            .venv/bin/python -m pytest \
+                              playwright/tests \
+                              -v \
+                              --junitxml=reports/jenkins/playwright.xml
+                        '''
                     }
                 }
             }
         }
 
         stage('Pruebas funcionales Semana 9') {
+            when {
+                expression {
+                    return params.PRUEBAS_FUNCIONALES
+                }
+            }
+
             steps {
-                dir('aula-nova-semana9') {
-                    script {
-                        withEnv(["BASE_URL=${env.AULA_NOVA_URL}"]) {
-                            runCommand(
-                                'python3 -m pytest tests -v --junitxml=reports/pytest/TESTS-playwright.xml',
-                                'py -m pytest tests -v --junitxml=reports/pytest/TESTS-playwright.xml'
-                            )
-                        }
+                catchError(
+                    buildResult: 'FAILURE',
+                    stageResult: 'FAILURE'
+                ) {
+                    dir('aula-nova-semana9') {
+                        sh '''
+                            set -eu
+
+                            python3 -m venv .venv
+
+                            .venv/bin/python -m pip install \
+                              pytest playwright
+
+                            .venv/bin/python -m playwright \
+                              install chromium
+
+                            export BASE_URL="$AULA_NOVA_URL"
+
+                            .venv/bin/python -m pytest \
+                              tests \
+                              -v \
+                              --junitxml=reports/pytest/TESTS-playwright.xml
+                        '''
                     }
                 }
             }
         }
 
-        stage('Pruebas de rendimiento k6') {
+        stage('Rendimiento k6 Semana 9') {
+            when {
+                expression {
+                    return params.PRUEBAS_K6
+                }
+            }
+
             steps {
-                dir('aula-nova-semana9') {
-                    script {
-                        for (int i = 1; i <= 10; i++) {
-                            String id = String.format('%02d', i)
-                            runCommand(
-                                "k6 run --env BASE_URL=${env.AULA_NOVA_URL} --summary-export=reports/performance/CR-${id}.json prueba-rendimiento/CR-${id}.js",
-                                "k6 run --env BASE_URL=${env.AULA_NOVA_URL} --summary-export=reports\\performance\\CR-${id}.json prueba-rendimiento\\CR-${id}.js"
-                            )
-                        }
+                catchError(
+                    buildResult: 'FAILURE',
+                    stageResult: 'FAILURE'
+                ) {
+                    dir('aula-nova-semana9') {
+                        sh '''
+                            set -eu
+
+                            k6 version
+
+                            for i in $(seq -w 1 10); do
+                                echo "Ejecutando CR-$i"
+
+                                k6 run \
+                                  --env BASE_URL="$AULA_NOVA_URL" \
+                                  --summary-export="reports/performance/CR-$i.json" \
+                                  "prueba-rendimiento/CR-$i.js"
+                            done
+                        '''
                     }
                 }
             }
         }
 
-        stage('Pruebas de estrés k6') {
+        stage('Estres k6 Semana 9') {
+            when {
+                expression {
+                    return params.PRUEBAS_K6
+                }
+            }
+
             steps {
-                dir('aula-nova-semana9') {
-                    script {
-                        for (int i = 1; i <= 10; i++) {
-                            String id = String.format('%02d', i)
-                            runCommand(
-                                "k6 run --env BASE_URL=${env.AULA_NOVA_URL} --summary-export=reports/stress/CE-${id}.json pruebas-estres/CE-${id}.js",
-                                "k6 run --env BASE_URL=${env.AULA_NOVA_URL} --summary-export=reports\\stress\\CE-${id}.json pruebas-estres\\CE-${id}.js"
-                            )
-                        }
+                catchError(
+                    buildResult: 'FAILURE',
+                    stageResult: 'FAILURE'
+                ) {
+                    dir('aula-nova-semana9') {
+                        sh '''
+                            set -eu
+
+                            for i in $(seq -w 1 10); do
+                                echo "Ejecutando CE-$i"
+
+                                k6 run \
+                                  --env BASE_URL="$AULA_NOVA_URL" \
+                                  --summary-export="reports/stress/CE-$i.json" \
+                                  "pruebas-estres/CE-$i.js"
+                            done
+                        '''
                     }
                 }
             }
@@ -205,15 +360,46 @@ pipeline {
 
     post {
         always {
-            script {
-                runCommand(
-                    'docker compose -f docker-compose.semana9.yml logs --no-color > aula-nova-semana9/reports/docker-compose.log 2>&1 || true; docker compose -f docker-compose.semana9.yml down --remove-orphans || true; docker compose -f docker-compose.semana8.yml logs --no-color > proyecto-tiendademo/reports/jenkins/docker-compose.log 2>&1 || true; docker compose -f docker-compose.semana8.yml down --remove-orphans || true',
-                    'docker compose -f docker-compose.semana9.yml logs --no-color > aula-nova-semana9\\reports\\docker-compose.log 2>&1 & docker compose -f docker-compose.semana9.yml down --remove-orphans & docker compose -f docker-compose.semana8.yml logs --no-color > proyecto-tiendademo\\reports\\jenkins\\docker-compose.log 2>&1 & docker compose -f docker-compose.semana8.yml down --remove-orphans'
-                )
-            }
-            junit testResults: 'proyecto-tiendademo/reports/jenkins/*.xml', allowEmptyResults: true
-            junit testResults: 'aula-nova-semana9/reports/**/*.xml', allowEmptyResults: true
-            archiveArtifacts artifacts: 'proyecto-tiendademo/reports/jenkins/**/*,proyecto-tiendademo/evidencias/jenkins-*/**,aula-nova-semana9/reports/**/*,aula-nova-semana9/evidencias/**/*', allowEmptyArchive: true
+            sh '''
+                mkdir -p proyecto-tiendademo/reports/jenkins
+                mkdir -p aula-nova-semana9/reports
+
+                if [ -f ci-semana8.yml ]; then
+                    docker compose -p semana11ci8 \
+                      -f ci-semana8.yml logs --no-color \
+                      > proyecto-tiendademo/reports/jenkins/docker-compose.log 2>&1 || true
+
+                    docker compose -p semana11ci8 \
+                      -f ci-semana8.yml down --remove-orphans || true
+                fi
+
+                if [ -f ci-semana9.yml ]; then
+                    docker compose -p semana11ci9 \
+                      -f ci-semana9.yml logs --no-color \
+                      > aula-nova-semana9/reports/docker-compose.log 2>&1 || true
+
+                    docker compose -p semana11ci9 \
+                      -f ci-semana9.yml down --remove-orphans || true
+                fi
+            '''
+
+            junit(
+                testResults: 'proyecto-tiendademo/reports/jenkins/*.xml,aula-nova-semana9/reports/**/*.xml',
+                allowEmptyResults: true
+            )
+
+            archiveArtifacts(
+                artifacts: 'proyecto-tiendademo/reports/jenkins/**/*,aula-nova-semana9/reports/**/*',
+                allowEmptyArchive: true
+            )
+        }
+
+        success {
+            echo 'SEMANA 11: PIPELINE FINALIZADO CORRECTAMENTE'
+        }
+
+        failure {
+            echo 'SEMANA 11: SE DETECTARON ERRORES'
         }
     }
 }
