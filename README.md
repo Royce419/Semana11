@@ -21,3 +21,4 @@ El agente Jenkins necesita Docker con Compose, Node.js 24, Python 3, Chrome/Chro
 ## TestLink pendiente de configuración
 
 La tarea solicita registrar resultados en TestLink. Para conectar la instancia se necesitan el URL de la API XML-RPC, el proyecto y plan de pruebas, el build de TestLink y la correspondencia entre los identificadores locales (CP/CR/CE) y los casos de TestLink. Guarda la clave API como secreto en GitHub Actions y como credencial en Jenkins; no la escribas en este README ni en el Jenkinsfile.
+Actualización para comprobar GitHub Actions
