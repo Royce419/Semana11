@@ -10,14 +10,11 @@ on:
 jobs:
   pruebas-semana-9:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
-
-    defaults:
-      run:
-        working-directory: aula-nova-semana9
+    timeout-minutes: 120
 
     env:
-      BASE_URL: http://127.0.0.1:3000
+      BASE_URL: http://127.0.0.1:3001
+      COMPOSE_FILE: docker-compose.semana9.yml
 
     steps:
       - name: Descargar repositorio
@@ -27,6 +24,8 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "24"
+          cache: npm
+          cache-dependency-path: aula-nova-semana9/package-lock.json
 
       - name: Configurar Python
         uses: actions/setup-python@v7
@@ -38,6 +37,7 @@ jobs:
 
       - name: Instalar dependencias y preparar reportes
         id: instalar
+        working-directory: aula-nova-semana9
         run: |
           npm ci
           python -m pip install --upgrade pip
@@ -46,40 +46,43 @@ jobs:
           mkdir -p reports/servidor reports/pytest reports/seguridad
           mkdir -p reports/performance reports/stress
 
+      - name: Construir y levantar Aula Nova con Docker Compose
+        id: docker
+        run: docker compose -f "$COMPOSE_FILE" up -d --build
+
+      - name: Esperar a que la aplicación en Docker responda
+        id: servidor
+        if: ${{ always() && steps.docker.outcome == 'success' }}
+        run: |
+          for intento in {1..30}; do
+            if curl --fail --silent "$BASE_URL/api/courses" > /dev/null; then
+              echo "Aula Nova está disponible en Docker."
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f "$COMPOSE_FILE" logs
+          exit 1
+
       - name: Pruebas unitarias del servidor
         if: ${{ always() && steps.instalar.outcome == 'success' }}
+        working-directory: aula-nova-semana9
         run: |
           node --test \
             --test-reporter=junit \
             --test-reporter-destination=reports/servidor/TESTS-servidor.xml \
             backend/server.test.js
 
-      - name: Iniciar aplicación y esperar disponibilidad
-        id: servidor
-        if: ${{ always() && steps.instalar.outcome == 'success' }}
-        run: |
-          nohup node backend/server.js > reports/servidor/server.log 2>&1 &
-          echo $! > reports/servidor/server.pid
-
-          for intento in {1..30}; do
-            if curl --fail --silent "$BASE_URL" > /dev/null; then
-              echo "Aula Nova está disponible."
-              exit 0
-            fi
-            sleep 2
-          done
-
-          cat reports/servidor/server.log
-          exit 1
-
       - name: Pruebas funcionales Playwright
         if: ${{ always() && steps.instalar.outcome == 'success' && steps.servidor.outcome == 'success' }}
+        working-directory: aula-nova-semana9
         run: |
           python -m pytest tests -v \
             --junitxml=reports/pytest/TESTS-playwright.xml
 
       - name: Pruebas de rendimiento k6
         if: ${{ always() && steps.instalar.outcome == 'success' && steps.servidor.outcome == 'success' }}
+        working-directory: aula-nova-semana9
         run: |
           shopt -s nullglob
           archivos=(prueba-rendimiento/CR-*.js)
@@ -99,6 +102,7 @@ jobs:
 
       - name: Pruebas de estrés k6
         if: ${{ always() && steps.instalar.outcome == 'success' && steps.servidor.outcome == 'success' }}
+        working-directory: aula-nova-semana9
         run: |
           shopt -s nullglob
           archivos=(pruebas-estres/CE-*.js)
@@ -110,7 +114,7 @@ jobs:
           fallo=0
           for archivo in "${archivos[@]}"; do
             nombre=$(basename "$archivo" .js)
-            k6 run \
+            k6 run --env BASE_URL="$BASE_URL" \
               --summary-export="reports/stress/${nombre}.json" \
               "$archivo" || fallo=1
           done
@@ -118,18 +122,19 @@ jobs:
 
       - name: Pruebas de seguridad
         if: ${{ always() && steps.instalar.outcome == 'success' }}
+        working-directory: aula-nova-semana9
         run: |
           node --test \
             --test-reporter=junit \
             --test-reporter-destination=reports/seguridad/TESTS-seguridad.xml \
             backend/security.test.js
 
-      - name: Detener aplicación
+      - name: Guardar registros y detener Docker Compose
         if: always()
         run: |
-          if [ -f reports/servidor/server.pid ]; then
-            kill "$(cat reports/servidor/server.pid)" 2>/dev/null || true
-          fi
+          mkdir -p aula-nova-semana9/reports
+          docker compose -f "$COMPOSE_FILE" logs --no-color > aula-nova-semana9/reports/docker-compose.log 2>&1 || true
+          docker compose -f "$COMPOSE_FILE" down --remove-orphans || true
 
       - name: Guardar reportes y evidencias
         if: always()

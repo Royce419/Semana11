@@ -1,3 +1,5 @@
+import os
+
 from playwright.sync_api import expect
 
 
@@ -11,7 +13,8 @@ class AulaPage:
         self.feedback = page.locator("#form-feedback")
 
     def abrir(self):
-        self.page.goto("http://localhost:3000")
+        base_url = os.environ.get("BASE_URL", "http://localhost:3000").rstrip("/")
+        self.page.goto(base_url)
 
         # Esperar a que termine la carga inicial.
         expect(
@@ -46,7 +49,7 @@ class AulaPage:
 
     def cantidad_mensajes(self):
         respuesta = self.page.request.get(
-            "http://localhost:3000/api/messages"
+            f"{os.environ.get('BASE_URL', 'http://localhost:3000').rstrip('/')}/api/messages"
         )
 
         assert respuesta.status == 200

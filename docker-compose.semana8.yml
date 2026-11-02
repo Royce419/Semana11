@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     image: tienda-demo-semana8:1.0
     ports:
-      - "8080:80"
+      - "8081:80"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/tienda_demo.html || exit 1"]
       interval: 10s
